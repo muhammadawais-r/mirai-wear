@@ -1,0 +1,100 @@
+{
+  "items": [
+    {
+      "id": "gojo-six-eyes-tee",
+      "title": "Six Eyes Oversized Tee",
+      "franchise": "Jujutsu Kaisen",
+      "category": "Anime",
+      "price": 2199,
+      "compare_price": null,
+      "image": "/images/uploads/placeholder-gojo.jpg",
+      "badge": "Best Seller",
+      "section": "Best Sellers",
+      "rating": 5
+    },
+    {
+      "id": "luffy-gear5-tee",
+      "title": "Gear 5 Sun God Tee",
+      "franchise": "One Piece",
+      "category": "Anime",
+      "price": 2199,
+      "compare_price": null,
+      "image": "/images/uploads/placeholder-luffy.jpg",
+      "badge": "Best Seller",
+      "section": "Best Sellers",
+      "rating": 5
+    },
+    {
+      "id": "jett-agent-tee",
+      "title": "Jett Agent Streetwear Tee",
+      "franchise": "Valorant",
+      "category": "Gaming",
+      "price": 2399,
+      "compare_price": null,
+      "image": "/images/uploads/placeholder-jett.jpg",
+      "badge": "Best Seller",
+      "section": "Best Sellers",
+      "rating": 5
+    },
+    {
+      "id": "itachi-crow-tee",
+      "title": "Itachi Crow Feather Tee",
+      "franchise": "Naruto",
+      "category": "Anime",
+      "price": 2199,
+      "compare_price": null,
+      "image": "/images/uploads/placeholder-itachi.jpg",
+      "badge": "Best Seller",
+      "section": "Best Sellers",
+      "rating": 5
+    },
+    {
+      "id": "gta-vicecity-tee",
+      "title": "Vice City Neon Tee",
+      "franchise": "GTA",
+      "category": "Gaming",
+      "price": 2399,
+      "compare_price": null,
+      "image": "/images/uploads/placeholder-gta.jpg",
+      "badge": "New",
+      "section": "New Arrivals",
+      "rating": 4
+    },
+    {
+      "id": "bts-proof-tee",
+      "title": "Proof Era Minimal Tee",
+      "franchise": "BTS",
+      "category": "Music",
+      "price": 2099,
+      "compare_price": null,
+      "image": "/images/uploads/placeholder-bts.jpg",
+      "badge": "New",
+      "section": "New Arrivals",
+      "rating": 5
+    },
+    {
+      "id": "spidernoir-tee",
+      "title": "Spider-Noir Oversized Tee",
+      "franchise": "Marvel",
+      "category": "Movies/Series",
+      "price": 2299,
+      "compare_price": null,
+      "image": "/images/uploads/placeholder-spidernoir.jpg",
+      "badge": "New",
+      "section": "New Arrivals",
+      "rating": 4
+    },
+    {
+      "id": "mirai-kanji-tee",
+      "title": "Mirai Kanji Signature Tee",
+      "franchise": "Original Designs",
+      "category": "Original Designs",
+      "price": 1999,
+      "compare_price": null,
+      "image": "/images/uploads/placeholder-mirai.jpg",
+      "badge": "New",
+      "section": "New Arrivals",
+      "rating": 5
+    }
+  ]
+}

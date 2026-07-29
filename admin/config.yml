@@ -1,0 +1,77 @@
+backend:
+  name: git-gateway
+  branch: main
+
+# Where uploaded images get saved in the repo, and the URL prefix used on the site
+media_folder: "images/uploads"
+public_folder: "/images/uploads"
+
+publish_mode: simple
+
+collections:
+  - name: "products"
+    label: "Products"
+    files:
+      - file: "content/products.json"
+        label: "Product List"
+        name: "products"
+        fields:
+          - label: "Products"
+            name: "items"
+            widget: "list"
+            summary: "{{title}} — {{category}} — PKR {{price}}"
+            fields:
+              - { label: "Product ID (unique, no spaces, e.g. gojo-tee)", name: "id", widget: "string" }
+              - { label: "Title", name: "title", widget: "string" }
+              - { label: "Franchise / label under title", name: "franchise", widget: "string" }
+              - label: "Category"
+                name: "category"
+                widget: "select"
+                options: ["Anime", "Gaming", "Movies/Series", "Music", "Original Designs"]
+              - { label: "Price (PKR)", name: "price", widget: "number", value_type: "int" }
+              - { label: "Compare-at price (optional, for showing a discount)", name: "compare_price", widget: "number", value_type: "int", required: false }
+              - { label: "Product Image", name: "image", widget: "image" }
+              - label: "Badge"
+                name: "badge"
+                widget: "select"
+                options: ["Best Seller", "New", "None"]
+                default: "None"
+              - label: "Show In Section"
+                name: "section"
+                widget: "select"
+                options: ["Best Sellers", "New Arrivals"]
+              - { label: "Star Rating (1-5)", name: "rating", widget: "number", value_type: "int", min: 1, max: 5, default: 5 }
+
+  - name: "categories"
+    label: "Categories"
+    files:
+      - file: "content/categories.json"
+        label: "Category List"
+        name: "categories"
+        fields:
+          - label: "Categories"
+            name: "items"
+            widget: "list"
+            summary: "{{name}}"
+            fields:
+              - { label: "Name", name: "name", widget: "string" }
+              - { label: "Emoji / short symbol", name: "emoji", widget: "string", required: false }
+              - { label: "Image (optional)", name: "image", widget: "image", required: false }
+
+  - name: "settings"
+    label: "Site Settings"
+    files:
+      - file: "content/settings.json"
+        label: "General Settings"
+        name: "general"
+        fields:
+          - { label: "Hero Eyebrow Text", name: "hero_eyebrow", widget: "string" }
+          - { label: "Hero Line 1", name: "hero_line1", widget: "string" }
+          - { label: "Hero Line 2", name: "hero_line2", widget: "string" }
+          - { label: "Hero Line 3 (accent color)", name: "hero_line3", widget: "string" }
+          - { label: "Hero Subtext", name: "hero_sub", widget: "text" }
+          - { label: "WhatsApp Number (with country code, digits only)", name: "whatsapp_number", widget: "string" }
+          - { label: "Contact Email", name: "contact_email", widget: "string" }
+          - { label: "Forminit Endpoint URL (for the design request form)", name: "forminit_endpoint", widget: "string" }
+          - { label: "About Us — Heading", name: "about_heading", widget: "string" }
+          - { label: "About Us — Body Text", name: "about_body", widget: "text" }

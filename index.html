@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MIRAI WEAR — Wear The Future</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0a0908; --ink-2:#141210; --paper:#f3ede4;
+    --red:#c8151f; --red-2:#e63946; --grey:#8a8378; --line:rgba(243,237,228,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--ink); color:var(--paper); font-family:'Space Grotesk', sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased;}
+  .display{font-family:'Anton', sans-serif; letter-spacing:0.01em; text-transform:uppercase;}
+  .mono{font-family:'JetBrains Mono', monospace;}
+  a{color:inherit; text-decoration:none;}
+  img{max-width:100%; display:block;}
+  button{font-family:inherit; cursor:pointer; background:none; border:none; color:inherit;}
+  ::selection{background:var(--red); color:var(--paper);}
+  a:focus-visible, button:focus-visible{outline:2px solid var(--red-2); outline-offset:3px;}
+
+  .grain{position:fixed; inset:0; pointer-events:none; z-index:50; opacity:0.045; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");}
+
+  header{position:sticky; top:0; z-index:40; background:rgba(10,9,8,0.86); backdrop-filter:blur(10px); border-bottom:1px solid var(--line);}
+  .nav-wrap{max-width:1360px; margin:0 auto; padding:14px 24px; display:flex; align-items:center; justify-content:space-between; gap:20px; position:relative;}
+  .logo-mark{display:flex; align-items:center; gap:10px;}
+  .logo-mark img{height:40px; width:40px; object-fit:contain;}
+  .logo-mark .word{font-size:19px; letter-spacing:0.03em;}
+  .logo-mark .word span{color:var(--red-2);}
+  nav.primary{display:flex; gap:26px; font-size:13px; letter-spacing:0.06em; text-transform:uppercase;}
+  nav.primary a{position:relative; padding:4px 0; color:var(--paper); opacity:0.82; transition:opacity .2s;}
+  nav.primary a:hover{opacity:1;}
+  nav.primary a::after{content:''; position:absolute; left:0; bottom:-2px; width:0; height:1px; background:var(--red-2); transition:width .25s ease;}
+  nav.primary a:hover::after{width:100%;}
+  .nav-actions{display:flex; align-items:center; gap:18px;}
+  .icon-btn{position:relative; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:2px; transition:border-color .2s, background .2s;}
+  .icon-btn:hover{border-color:var(--red-2); background:rgba(230,57,70,0.08);}
+  .cart-count{position:absolute; top:-7px; right:-7px; background:var(--red-2); color:var(--ink); font-size:10px; font-weight:700; width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+  .burger{display:none; flex-direction:column; gap:5px; cursor:pointer;}
+  .burger span{width:22px; height:2px; background:var(--paper);}
+  @media (max-width:960px){nav.primary{display:none;} .burger{display:flex;}}
+
+  /* Search overlay */
+  .search-panel{
+    position:absolute; top:100%; left:0; right:0; background:var(--ink-2); border-bottom:1px solid var(--line);
+    padding:0; max-height:0; overflow:hidden; transition:max-height .3s ease;
+  }
+  .search-panel.open{max-height:420px;}
+  .search-panel-inner{max-width:700px; margin:0 auto; padding:22px 24px;}
+  .search-panel input{
+    width:100%; background:var(--ink); border:1px solid var(--line); color:var(--paper); padding:14px 16px;
+    font-family:inherit; font-size:15px; border-radius:2px;
+  }
+  .search-panel input:focus{outline:none; border-color:var(--red-2);}
+  .search-results{margin-top:14px; display:flex; flex-direction:column; gap:2px; max-height:280px; overflow-y:auto;}
+  .search-result{display:flex; align-items:center; gap:12px; padding:10px; border-radius:2px; transition:background .15s;}
+  .search-result:hover{background:rgba(230,57,70,0.08); cursor:pointer;}
+  .search-result .thumb{width:42px; height:42px; background:linear-gradient(160deg,#1c1a17,#0d0c0b); border-radius:2px; flex-shrink:0; overflow:hidden;}
+  .search-result .thumb img{width:100%; height:100%; object-fit:cover;}
+  .search-result .info{flex:1; min-width:0;}
+  .search-result .info .t{font-size:13px; font-weight:600;}
+  .search-result .info .f{font-size:11px; color:var(--grey);}
+  .search-result .p{font-family:'JetBrains Mono', monospace; font-size:13px; color:var(--red-2);}
+  .search-empty{color:var(--grey); font-size:13px; padding:8px 10px;}
+
+  /* Cart drawer */
+  .cart-backdrop{position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:60; opacity:0; pointer-events:none; transition:opacity .3s ease;}
+  .cart-backdrop.open{opacity:1; pointer-events:auto;}
+  .cart-drawer{
+    position:fixed; top:0; right:0; bottom:0; width:min(420px,92vw); background:var(--ink-2); border-left:1px solid var(--line);
+    z-index:61; display:flex; flex-direction:column; transform:translateX(100%); transition:transform .35s ease;
+  }
+  .cart-drawer.open{transform:translateX(0);}
+  .cart-head{display:flex; align-items:center; justify-content:space-between; padding:22px 24px; border-bottom:1px solid var(--line);}
+  .cart-head h3{font-size:15px; letter-spacing:0.06em; text-transform:uppercase;}
+  .cart-close{font-size:22px; line-height:1;}
+  .cart-items{flex:1; overflow-y:auto; padding:16px 24px;}
+  .cart-item{display:flex; gap:12px; padding:14px 0; border-bottom:1px solid var(--line);}
+  .cart-item .thumb{width:60px; height:70px; background:linear-gradient(160deg,#1c1a17,#0d0c0b); border-radius:2px; overflow:hidden; flex-shrink:0;}
+  .cart-item .thumb img{width:100%; height:100%; object-fit:cover;}
+  .cart-item .meta{flex:1; min-width:0;}
+  .cart-item .meta .t{font-size:13px; font-weight:600; margin-bottom:6px;}
+  .cart-item .meta .p{font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--grey);}
+  .qty-row{display:flex; align-items:center; gap:10px; margin-top:8px;}
+  .qty-btn{width:24px; height:24px; border:1px solid var(--line); display:flex; align-items:center; justify-content:center; font-size:13px;}
+  .qty-btn:hover{border-color:var(--red-2);}
+  .remove-btn{font-size:11px; color:var(--grey); text-decoration:underline; margin-left:auto;}
+  .remove-btn:hover{color:var(--red-2);}
+  .cart-empty{color:var(--grey); font-size:13px; text-align:center; padding:40px 0;}
+  .cart-foot{padding:20px 24px; border-top:1px solid var(--line);}
+  .cart-subtotal{display:flex; justify-content:space-between; font-size:14px; margin-bottom:16px;}
+  .cart-subtotal strong{font-family:'JetBrains Mono', monospace;}
+  .cart-checkout-btns{display:flex; flex-direction:column; gap:10px;}
+  .btn-block{width:100%; justify-content:center;}
+  .btn-whatsapp{background:#25D366; color:#0a0908;}
+  .btn-whatsapp:hover{transform:translateY(-2px);}
+
+  .hero{position:relative; min-height:88vh; display:flex; align-items:center; padding:60px 24px 40px;
+    background:radial-gradient(ellipse 60% 50% at 78% 18%, rgba(200,21,31,0.28), transparent 60%), radial-gradient(ellipse 40% 40% at 10% 90%, rgba(200,21,31,0.10), transparent 60%), var(--ink); overflow:hidden;}
+  .hero::before{content:''; position:absolute; inset:0; background-image: repeating-linear-gradient(90deg, rgba(243,237,228,0.035) 0px, rgba(243,237,228,0.035) 1px, transparent 1px, transparent 64px); pointer-events:none;}
+  .hero-inner{max-width:1360px; margin:0 auto; width:100%; display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; position:relative; z-index:2;}
+  .eyebrow{display:inline-flex; align-items:center; gap:10px; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--red-2); margin-bottom:22px;}
+  .eyebrow::before{content:''; width:26px; height:1px; background:var(--red-2);}
+  .hero h1{font-size:clamp(52px, 8vw, 108px); line-height:0.92; letter-spacing:0.005em;}
+  .hero h1 .accent{color:var(--red-2);}
+  .hero p.sub{margin-top:24px; max-width:480px; font-size:17px; line-height:1.6; color:rgba(243,237,228,0.72);}
+  .hero-ctas{display:flex; gap:14px; margin-top:38px; flex-wrap:wrap;}
+  .btn{display:inline-flex; align-items:center; gap:10px; padding:16px 30px; font-size:13px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; border-radius:2px; transition:transform .2s ease, box-shadow .2s ease; border:1px solid transparent;}
+  .btn-primary{background:var(--red-2); color:var(--ink);}
+  .btn-primary:hover{transform:translateY(-2px); box-shadow:0 10px 30px -8px rgba(230,57,70,0.6);}
+  .btn-ghost{border:1px solid var(--line); color:var(--paper);}
+  .btn-ghost:hover{border-color:var(--paper); transform:translateY(-2px);}
+  .hero-mark{position:relative; display:flex; align-items:center; justify-content:center; width:100%;}
+  .hero-mark img{width:min(500px, 100%); filter:drop-shadow(0 30px 60px rgba(200,21,31,0.25)); animation:float 6s ease-in-out infinite;}
+  @keyframes float{0%,100%{transform:translateY(0px);} 50%{transform:translateY(-14px);}}
+  .kanji-strip{position:absolute; right:0; top:6%; writing-mode:vertical-rl; font-size:12px; letter-spacing:0.3em; color:rgba(243,237,228,0.35); text-transform:uppercase;}
+  .hero-strip{max-width:1360px; margin:64px auto 0; padding:20px 24px 0; border-top:1px solid var(--line);
+    display:grid; grid-template-columns:repeat(4,1fr); gap:24px; font-size:12px; letter-spacing:0.08em; text-transform:uppercase; color:rgba(243,237,228,0.55);}
+  .hero-strip span{border-left:1px solid var(--line); padding-left:20px;}
+  .hero-strip span:first-child{border-left:none; padding-left:0;}
+  .hero-strip strong{color:var(--paper); font-weight:600; display:block; margin-bottom:2px;}
+  @media (max-width:860px){
+    .hero-inner{grid-template-columns:1fr; text-align:left;}
+    .hero-mark{order:-1; margin-bottom:10px;}
+    .hero-mark img{width:220px;}
+    .kanji-strip{display:none;}
+    .hero-strip{grid-template-columns:repeat(2,1fr); gap:16px;}
+    .hero-strip span{border-left:none; padding-left:0;}
+  }
+
+  section{padding:100px 24px;}
+  .section-inner{max-width:1360px; margin:0 auto;}
+  .section-head{display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:48px; flex-wrap:wrap;}
+  .section-tag{font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--red-2); margin-bottom:12px; display:block;}
+  .section-head h2{font-size:clamp(32px,4.5vw,52px); line-height:1;}
+  .section-link{font-size:13px; letter-spacing:0.05em; text-transform:uppercase; border-bottom:1px solid var(--line); padding-bottom:4px; transition:border-color .2s;}
+  .section-link:hover{border-color:var(--red-2); color:var(--red-2);}
+  .divider-torn{height:3px; max-width:1360px; margin:0 auto; background:linear-gradient(90deg, transparent, var(--red-2) 15%, var(--red-2) 85%, transparent); opacity:0.5;}
+
+  .cat-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:16px;}
+  @media (max-width:920px){.cat-grid{grid-template-columns:repeat(3,1fr);}}
+  @media (max-width:560px){.cat-grid{grid-template-columns:repeat(2,1fr);}}
+  .cat-tile{position:relative; aspect-ratio:1; border:1px solid var(--line); border-radius:3px; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; background:linear-gradient(160deg,#1c1a17,#0d0c0b); transition:transform .25s ease, border-color .25s ease;}
+  .cat-tile:hover{transform:translateY(-4px); border-color:rgba(230,57,70,0.55);}
+  .cat-tile .emoji{font-size:26px;}
+  .cat-tile .name{font-size:12px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; text-align:center; padding:0 8px;}
+
+  .grid-4{display:grid; grid-template-columns:repeat(4,1fr); gap:22px;}
+  @media (max-width:1080px){.grid-4{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.grid-4{grid-template-columns:1fr;}}
+
+  .card{position:relative; background:var(--ink-2); border:1px solid var(--line); border-radius:3px; overflow:hidden; transition:transform .3s ease, border-color .3s ease;}
+  .card:hover{transform:translateY(-6px); border-color:rgba(230,57,70,0.5);}
+  .card-media{aspect-ratio:4/5; position:relative; overflow:hidden; background:repeating-linear-gradient(135deg, rgba(243,237,228,0.03) 0 2px, transparent 2px 14px), linear-gradient(160deg, #1c1a17, #0d0c0b); display:flex; align-items:center; justify-content:center;}
+  .card-media img{width:100%; height:100%; object-fit:cover;}
+  .card-media .placeholder-mark{font-family:'Anton', sans-serif; font-size:15px; letter-spacing:0.08em; color:rgba(243,237,228,0.22); text-transform:uppercase; text-align:center; line-height:1.5;}
+  .badge{position:absolute; top:14px; left:14px; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:6px 10px; background:var(--red-2); color:var(--ink); font-weight:700; border-radius:1px; transform:rotate(-2deg); z-index:2;}
+  .badge.alt{background:var(--paper); color:var(--ink);}
+  .quick-add{position:absolute; left:14px; right:14px; bottom:14px; padding:12px; text-align:center; background:rgba(10,9,8,0.85); backdrop-filter:blur(6px); border:1px solid var(--line); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; opacity:0; transform:translateY(8px); transition:opacity .25s ease, transform .25s ease, background .2s; font-weight:600; z-index:2; cursor:pointer;}
+  .card:hover .quick-add{opacity:1; transform:translateY(0);}
+  .quick-add:hover{background:rgba(230,57,70,0.85);}
+  @media (hover:none){.quick-add{opacity:1; position:static; margin-top:10px; transform:none;}}
+  .card-body{padding:18px 16px 20px;}
+  .card-body .franchise{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--grey); margin-bottom:6px;}
+  .card-body h3{font-size:16px; font-weight:600; margin-bottom:10px; line-height:1.35;}
+  .card-foot{display:flex; align-items:center; justify-content:space-between;}
+  .price{font-family:'JetBrains Mono', monospace; font-size:15px; font-weight:500;}
+  .price .was{color:var(--grey); text-decoration:line-through; font-size:12px; margin-right:6px;}
+  .stars{color:var(--red-2); font-size:12px; letter-spacing:1px;}
+  .empty-note{color:var(--grey); font-size:13px; padding:20px 0;}
+
+  .filter-bar{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:36px;}
+  .filter-chip{padding:9px 18px; border:1px solid var(--line); border-radius:20px; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; transition:all .2s ease;}
+  .filter-chip.active, .filter-chip:hover{border-color:var(--red-2); color:var(--red-2);}
+
+  .customize-banner{position:relative; border-radius:4px; overflow:hidden; padding:90px 40px; background:radial-gradient(circle at 85% 20%, rgba(230,57,70,0.35), transparent 55%), radial-gradient(circle at 10% 90%, rgba(230,57,70,0.15), transparent 50%), #120f0d; border:1px solid var(--line); text-align:center;}
+  .customize-banner::before{content:''; position:absolute; inset:0; background-image: repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(243,237,228,0.025) 39px);}
+  .customize-banner .content{position:relative; z-index:2; max-width:640px; margin:0 auto;}
+  .customize-banner .section-tag{justify-content:center;}
+  .customize-banner h2{font-size:clamp(34px,5vw,58px); line-height:1.02; margin-bottom:18px;}
+  .customize-banner p{color:rgba(243,237,228,0.7); font-size:16px; margin-bottom:34px;}
+
+  .design-form{max-width:820px; margin:0 auto; background:var(--ink-2); border:1px solid var(--line); border-radius:4px; padding:40px;}
+  .design-form .row{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:18px;}
+  @media (max-width:640px){.design-form .row{grid-template-columns:1fr;}}
+  .field label{display:block; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--grey); margin-bottom:8px;}
+  .field input, .field select, .field textarea{width:100%; background:var(--ink); border:1px solid var(--line); color:var(--paper); padding:13px 14px; border-radius:2px; font-family:inherit; font-size:14px;}
+  .field input:focus, .field select:focus, .field textarea:focus{outline:none; border-color:var(--red-2);}
+  .field textarea{resize:vertical; min-height:90px;}
+  .file-drop{border:1px dashed var(--line); border-radius:2px; padding:26px; text-align:center; font-size:13px; color:var(--grey); cursor:pointer; transition:border-color .2s; display:block;}
+  .file-drop:hover{border-color:var(--red-2);}
+  .file-drop input{display:none;}
+  .file-name{margin-top:10px; font-size:12px; color:var(--paper);}
+  .form-note{font-size:12px; color:var(--grey); margin-top:16px; line-height:1.6;}
+  .form-status{margin-top:16px; font-size:13px; display:none;}
+  .form-status.ok{color:#7fd88f; display:block;}
+  .form-status.err{color:var(--red-2); display:block;}
+  .form-alt{text-align:center; margin-top:18px; padding-top:18px; border-top:1px solid var(--line);}
+
+  .about-section{background:var(--ink-2); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .about-grid{display:grid; grid-template-columns:0.8fr 1.2fr; gap:60px; align-items:center;}
+  @media (max-width:860px){.about-grid{grid-template-columns:1fr;}}
+  .about-grid .mark{display:flex; justify-content:center;}
+  .about-grid .mark img{width:min(280px,100%); opacity:0.92;}
+  .about-grid h2{font-size:clamp(30px,4vw,44px); margin-bottom:20px; line-height:1.1;}
+  .about-grid p{color:rgba(243,237,228,0.72); font-size:16px; line-height:1.75;}
+
+  .trust-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .trust-item{background:var(--ink); padding:34px 22px; text-align:center;}
+  .trust-item .glyph{font-size:26px; margin-bottom:14px;}
+  .trust-item p{font-size:12.5px; letter-spacing:0.03em; color:rgba(243,237,228,0.75); line-height:1.5;}
+  @media (max-width:920px){.trust-grid{grid-template-columns:repeat(2,1fr);}}
+  @media (max-width:560px){.trust-grid{grid-template-columns:1fr;}}
+
+  footer{border-top:1px solid var(--line); padding:70px 24px 30px;}
+  .footer-grid{max-width:1360px; margin:0 auto; display:grid; grid-template-columns:1.2fr repeat(4,1fr); gap:32px;}
+  .footer-grid h4{font-size:12px; letter-spacing:0.12em; text-transform:uppercase; color:var(--grey); margin-bottom:18px;}
+  .footer-grid ul{list-style:none;}
+  .footer-grid li{margin-bottom:10px; font-size:14px;}
+  .footer-grid a:hover{color:var(--red-2);}
+  .footer-grid .admin-link{opacity:0.55; cursor:pointer; user-select:none;}
+  .footer-grid .admin-link:hover{opacity:0.85;}
+  .footer-bottom{max-width:1360px; margin:60px auto 0; padding-top:24px; border-top:1px solid var(--line); display:flex; justify-content:space-between; flex-wrap:wrap; gap:14px; font-size:12px; color:var(--grey);}
+  @media (max-width:900px){.footer-grid{grid-template-columns:1fr 1fr;}}
+
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+  @media (prefers-reduced-motion: reduce){.hero-mark img{animation:none;} .reveal{transition:none; opacity:1; transform:none;}}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<header>
+  <div class="nav-wrap">
+    <a href="#" class="logo-mark">
+      <img src="logo.png" alt="Mirai Wear logo">
+      <span class="word display">MIRAI <span>WEAR</span></span>
+    </a>
+    <nav class="primary">
+      <a href="#">Home</a>
+      <a href="#categories">Categories</a>
+      <a href="#customize">Customize</a>
+      <a href="#new">New Arrivals</a>
+      <a href="#bestsellers">Best Sellers</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="nav-actions">
+      <button class="icon-btn" id="search-btn" title="Search" aria-label="Search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+      </button>
+      <button class="icon-btn" id="cart-btn" title="Cart" aria-label="Cart">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h15l-1.5 9h-12z"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M6 6L4 2H2"/></svg>
+        <span class="cart-count" id="cart-count" style="display:none;">0</span>
+      </button>
+      <div class="burger" aria-label="Menu"><span></span><span></span><span></span></div>
+    </div>
+    <div class="search-panel" id="search-panel">
+      <div class="search-panel-inner">
+        <input type="text" id="search-input" placeholder="Search Gojo, Luffy, Valorant, BTS...">
+        <div class="search-results" id="search-results"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="cart-backdrop" id="cart-backdrop"></div>
+<aside class="cart-drawer" id="cart-drawer">
+  <div class="cart-head">
+    <h3 class="display">Your Cart</h3>
+    <button class="cart-close" id="cart-close">&times;</button>
+  </div>
+  <div class="cart-items" id="cart-items"></div>
+  <div class="cart-foot">
+    <div class="cart-subtotal"><span>Subtotal</span><strong id="cart-subtotal">PKR 0</strong></div>
+    <div class="cart-checkout-btns">
+      <a href="#" class="btn btn-block btn-whatsapp" id="cart-whatsapp">Order via WhatsApp</a>
+      <a href="#" class="btn btn-block btn-ghost" id="cart-email">Email My Order</a>
+    </div>
+  </div>
+</aside>
+
+<section class="hero" style="padding-top:60px;">
+  <div class="hero-inner">
+    <div>
+      <span class="eyebrow mono" id="hero-eyebrow">未来 — Pakistan's Pop-Culture Store</span>
+      <h1 class="display" id="hero-heading">WEAR<br>YOUR<br><span class="accent">PASSION.</span></h1>
+      <p class="sub" id="hero-sub">Anime. Gaming. Movies. Music. Premium 180+ GSM printed tees, designed for the culture and built for Pakistan's streets — with Cash on Delivery, everywhere.</p>
+      <div class="hero-ctas">
+        <a href="#bestsellers" class="btn btn-primary">Shop Now</a>
+        <a href="#customize" class="btn btn-ghost">Design Your Own</a>
+      </div>
+    </div>
+    <div class="hero-mark">
+      <span class="kanji-strip mono">未来を着る — WEAR THE FUTURE</span>
+      <img src="logo.png" alt="Mirai Wear brushstroke logo mark">
+    </div>
+  </div>
+  <div class="hero-strip mono">
+    <span><strong>180+ GSM</strong>Combed Cotton</span>
+    <span><strong>3–5 Days</strong>Nationwide Delivery</span>
+    <span><strong>COD</strong>Available Everywhere</span>
+    <span><strong>🇵🇰 Made in PK</strong>Proudly Local</span>
+  </div>
+</section>
+
+<div class="divider-torn"></div>
+
+<section id="categories">
+  <div class="section-inner">
+    <div class="section-head reveal">
+      <div><span class="section-tag">🗂️ Browse</span><h2 class="display">Shop by Category</h2></div>
+    </div>
+    <div class="cat-grid reveal" id="cat-grid"></div>
+  </div>
+</section>
+
+<section id="bestsellers" style="padding-top:0;">
+  <div class="section-inner">
+    <div class="section-head reveal">
+      <div><span class="section-tag">🔥 Fan Favorites</span><h2 class="display">Best Sellers</h2></div>
+      <a href="#products" class="section-link">View All Products →</a>
+    </div>
+    <div class="grid-4" id="bestsellers-grid"></div>
+  </div>
+</section>
+
+<section id="new" style="padding-top:0;">
+  <div class="section-inner">
+    <div class="section-head reveal">
+      <div><span class="section-tag">🆕 Fresh Drops</span><h2 class="display">New Arrivals</h2></div>
+      <a href="#products" class="section-link">View All Products →</a>
+    </div>
+    <div class="grid-4" id="newarrivals-grid"></div>
+  </div>
+</section>
+
+<section id="products" style="padding-top:0;">
+  <div class="section-inner">
+    <div class="section-head reveal">
+      <div><span class="section-tag">🛍️ Everything</span><h2 class="display">All Products</h2></div>
+    </div>
+    <div class="filter-bar reveal" id="filter-bar"></div>
+    <div class="grid-4" id="all-products-grid"></div>
+  </div>
+</section>
+
+<section id="customize">
+  <div class="section-inner">
+    <div class="customize-banner reveal">
+      <div class="content">
+        <span class="section-tag mono">🎨 Create Studio</span>
+        <h2 class="display">Design Your Own Apparel</h2>
+        <p>Upload your own artwork or type it out — pick a fit, a color, and watch your design appear on the shirt in real time. Yours, printed and delivered.</p>
+        <a href="#design-request" class="btn btn-primary">Start Designing</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="design-request" style="padding-top:0;">
+  <div class="section-inner">
+    <div class="section-head reveal" style="justify-content:center; text-align:center; flex-direction:column; align-items:center;">
+      <span class="section-tag">📩 Send Us Your Design</span>
+      <h2 class="display">Custom Design Request</h2>
+      <p style="max-width:520px; color:rgba(243,237,228,0.65); margin-top:14px; font-size:15px;">Upload your artwork, tell us the shirt color, size and fit — we'll get back to you with a price and mockup before printing anything.</p>
+    </div>
+
+    <form class="design-form reveal" id="design-request-form">
+      <div class="row">
+        <div class="field"><label for="dr-name">Full Name</label><input type="text" id="dr-name" name="name" required></div>
+        <div class="field"><label for="dr-phone">Phone / WhatsApp</label><input type="tel" id="dr-phone" name="phone" placeholder="03XX-XXXXXXX" required></div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="dr-color">Shirt Color</label>
+          <select id="dr-color" name="color" required>
+            <option value="Black">Black</option><option value="White">White</option><option value="Grey">Grey</option><option value="Navy">Navy</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="dr-fit">Fit</label>
+          <select id="dr-fit" name="fit" required>
+            <option value="Regular Fit">Regular Fit</option><option value="Oversized Fit">Oversized Fit</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="dr-size">Size</label>
+          <select id="dr-size" name="size" required>
+            <option value="S">S</option><option value="M">M</option><option value="L" selected>L</option><option value="XL">XL</option>
+          </select>
+        </div>
+        <div class="field"><label for="dr-qty">Quantity</label><input type="number" id="dr-qty" name="quantity" min="1" value="1" required></div>
+      </div>
+      <div class="field" style="margin-bottom:18px;">
+        <label for="dr-notes">Notes (placement, text, references)</label>
+        <textarea id="dr-notes" name="notes" placeholder="e.g. print on front centre, keep the red glow, add my name below it"></textarea>
+      </div>
+      <div class="field" style="margin-bottom:6px;">
+        <label>Your Design File</label>
+        <label class="file-drop" id="dr-drop">
+          <span id="dr-drop-text">Click to upload PNG / JPG — high resolution, please (300 DPI recommended)</span>
+          <input type="file" id="dr-file" name="attachment" accept="image/png, image/jpeg" required>
+        </label>
+        <div class="file-name" id="dr-filename"></div>
+      </div>
+      <div style="text-align:center; margin-top:26px;">
+        <button type="submit" class="btn btn-primary" id="dr-submit">Send Design Request</button>
+      </div>
+      <div class="form-status" id="dr-status"></div>
+      <p class="form-note">This sends your design straight to our team's email, full resolution. We'll confirm price and mockup on WhatsApp before anything goes to print.</p>
+      <div class="form-alt">
+        <a href="#" class="btn btn-whatsapp" id="dr-whatsapp-fallback">Or message us on WhatsApp instead</a>
+        <p class="form-note">(opens a chat pre-filled with your order details — just attach your design image there)</p>
+      </div>
+    </form>
+  </div>
+</section>
+
+<section class="about-section" id="about">
+  <div class="section-inner about-grid">
+    <div class="mark reveal"><img src="logo.png" alt="Mirai Wear logo"></div>
+    <div class="reveal">
+      <span class="section-tag">🇵🇰 Our Story</span>
+      <h2 class="display" id="about-heading">Wear The Future — 未来を着る</h2>
+      <p id="about-body">Mirai Wear started with a simple frustration: Pakistan's anime, gaming and pop-culture fans had nowhere local to get apparel that actually felt premium. Imported prints were expensive and slow, local ones faded after a wash. So we built our own — 180+ GSM combed cotton, ultra-HD prints that hold up, and a store that speaks the language of the culture instead of just slapping a character on a shirt. Every piece is designed, printed and shipped from Pakistan, with Cash on Delivery so you never have to pay before you see it. This is a store built by fans, for fans — wear what you're into.</p>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0;">
+  <div class="section-inner">
+    <div class="trust-grid reveal">
+      <div class="trust-item"><div class="glyph">🧵</div><p>100% Premium Cotton<br>(180+ GSM)</p></div>
+      <div class="trust-item"><div class="glyph">🖼️</div><p>Ultra-HD<br>Long-Lasting Prints</p></div>
+      <div class="trust-item"><div class="glyph">⚡</div><p>Fast Nationwide<br>Delivery (3–5 Days)</p></div>
+      <div class="trust-item"><div class="glyph">💵</div><p>Cash on Delivery<br>Across Pakistan</p></div>
+      <div class="trust-item"><div class="glyph">🇵🇰</div><p>Proudly Made<br>in Pakistan</p></div>
+    </div>
+  </div>
+</section>
+
+<footer id="contact">
+  <div class="footer-grid">
+    <div>
+      <a href="#" class="logo-mark" style="margin-bottom:16px;">
+        <img src="logo.png" alt="Mirai Wear logo" style="height:34px; width:34px;">
+        <span class="word display" style="font-size:17px;">MIRAI <span style="color:#e63946;">WEAR</span></span>
+      </a>
+      <p style="font-size:13px; color:var(--grey); max-width:260px; line-height:1.6;">未来を着る — Wear The Future. Pakistan's home for premium anime, gaming, and pop-culture apparel.</p>
+    </div>
+    <div>
+      <h4>Shop</h4>
+      <ul>
+        <li><a href="#bestsellers">Best Sellers</a></li>
+        <li><a href="#new">New Arrivals</a></li>
+        <li><a href="#categories">Categories</a></li>
+        <li><a href="#products">All Products</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Support</h4>
+      <ul>
+        <li><a href="#design-request">Custom Design Request</a></li>
+        <li><a href="#">Size Guide</a></li>
+        <li><a href="#">Shipping & COD</a></li>
+        <li><a href="#">Returns</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Brand</h4>
+      <ul>
+        <li><a href="#about">About Us</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#">AWII Store</a></li>
+        <li><a href="#">Instagram</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4>Logs</h4>
+      <ul>
+        <li><a href="#" class="admin-link" id="admin-login-trigger">login</a></li>
+        <li><a href="#" class="admin-link" id="admin-logout-trigger">logout</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom mono">
+    <span>© 2026 MIRAI WEAR. All rights reserved.</span>
+    <span>Prices in PKR · Made in Pakistan</span>
+  </div>
+</footer>
+
+<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+<script>
+  // ---------- Netlify Identity (real backend auth for the hidden admin trigger) ----------
+  if (window.netlifyIdentity) {
+    netlifyIdentity.on('init', function(user){
+      if (!user) {
+        netlifyIdentity.on('login', function(){
+          window.location.href = 'admin/';
+        });
+      }
+    });
+    netlifyIdentity.init();
+  }
+
+  function makeTripleClick(el, callback){
+    if(!el) return;
+    let clicks = 0, timer = null;
+    el.addEventListener('click', function(e){
+      e.preventDefault();
+      clicks++;
+      if(clicks === 1){ timer = setTimeout(function(){ clicks = 0; }, 900); }
+      if(clicks >= 3){
+        clicks = 0; clearTimeout(timer);
+        callback();
+      }
+    });
+  }
+  makeTripleClick(document.getElementById('admin-login-trigger'), function(){
+    if(window.netlifyIdentity) netlifyIdentity.open('login');
+    else alert('Admin login only works once this site is deployed on Netlify with Identity enabled.');
+  });
+  makeTripleClick(document.getElementById('admin-logout-trigger'), function(){
+    if(window.netlifyIdentity) netlifyIdentity.logout();
+  });
+
+  // ---------- Scroll reveal ----------
+  function initReveal(){
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:0.1});
+    revealEls.forEach(el=>io.observe(el));
+  }
+
+  // ---------- State ----------
+  const state = { products: [], categories: [], settings: {}, activeCategory: 'All', cart: [] };
+
+  async function loadJSON(path){
+    try{
+      const res = await fetch(path + '?v=' + Date.now());
+      if(!res.ok) throw new Error('Failed to load ' + path);
+      return await res.json();
+    }catch(err){ console.error(err); return null; }
+  }
+
+  function productCardHTML(p){
+    const media = p.image
+      ? '<img src="' + p.image + '" alt="' + p.title + '">'
+      : '<span class="placeholder-mark">' + (p.franchise||p.title).toUpperCase() + '</span>';
+    const badge = p.badge && p.badge !== 'None'
+      ? '<span class="badge ' + (p.badge==='New'?'alt':'') + '">' + p.badge + '</span>' : '';
+    const rating = p.rating || 5;
+    const stars = '★★★★★'.slice(0, rating) + '☆☆☆☆☆'.slice(0, 5-rating);
+    const priceWas = p.compare_price ? '<span class="was">PKR ' + p.compare_price + '</span>' : '';
+    return '' +
+      '<div class="card reveal">' +
+        '<div class="card-media">' + badge + media + '<div class="quick-add" data-id="' + p.id + '">+ Add to Cart</div></div>' +
+        '<div class="card-body">' +
+          '<span class="franchise">' + (p.franchise || p.category) + '</span>' +
+          '<h3>' + p.title + '</h3>' +
+          '<div class="card-foot"><span class="price">' + priceWas + 'PKR ' + p.price + '</span><span class="stars">' + stars + '</span></div>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function renderBestSellers(){
+    const el = document.getElementById('bestsellers-grid');
+    const items = state.products.filter(p => p.section === 'Best Sellers');
+    el.innerHTML = items.length ? items.map(productCardHTML).join('') : '<p class="empty-note">No best sellers added yet — add some in the admin dashboard.</p>';
+  }
+  function renderNewArrivals(){
+    const el = document.getElementById('newarrivals-grid');
+    const items = state.products.filter(p => p.section === 'New Arrivals');
+    el.innerHTML = items.length ? items.map(productCardHTML).join('') : '<p class="empty-note">No new arrivals added yet.</p>';
+  }
+  function renderAllProducts(){
+    const el = document.getElementById('all-products-grid');
+    const items = state.activeCategory === 'All' ? state.products : state.products.filter(p => p.category === state.activeCategory);
+    el.innerHTML = items.length ? items.map(productCardHTML).join('') : '<p class="empty-note">No products in this category yet.</p>';
+    initReveal();
+  }
+  function renderFilterBar(){
+    const el = document.getElementById('filter-bar');
+    const names = ['All'].concat(state.categories.map(c => c.name));
+    el.innerHTML = names.map(n => '<button class="filter-chip ' + (n===state.activeCategory?'active':'') + '" data-cat="' + n + '">' + n + '</button>').join('');
+    el.querySelectorAll('.filter-chip').forEach(btn => {
+      btn.addEventListener('click', () => { state.activeCategory = btn.dataset.cat; renderFilterBar(); renderAllProducts(); });
+    });
+  }
+  function renderCategories(){
+    const el = document.getElementById('cat-grid');
+    el.innerHTML = state.categories.map(c =>
+      '<a href="#products" class="cat-tile" data-cat="' + c.name + '"><span class="emoji">' + (c.emoji || '🏷️') + '</span><span class="name">' + c.name + '</span></a>'
+    ).join('');
+    el.querySelectorAll('.cat-tile').forEach(tile => {
+      tile.addEventListener('click', () => { state.activeCategory = tile.dataset.cat; renderFilterBar(); renderAllProducts(); });
+    });
+  }
+
+  function applySettings(){
+    const s = state.settings;
+    if(!s) return;
+    if(s.hero_eyebrow) document.getElementById('hero-eyebrow').textContent = s.hero_eyebrow;
+    if(s.hero_line1 || s.hero_line2 || s.hero_line3){
+      document.getElementById('hero-heading').innerHTML = (s.hero_line1||'') + '<br>' + (s.hero_line2||'') + '<br><span class="accent">' + (s.hero_line3||'') + '</span>';
+    }
+    if(s.hero_sub) document.getElementById('hero-sub').textContent = s.hero_sub;
+    if(s.forminit_endpoint) document.getElementById('design-request-form').dataset.endpoint = s.forminit_endpoint;
+    if(s.about_heading) document.getElementById('about-heading').textContent = s.about_heading;
+    if(s.about_body) document.getElementById('about-body').textContent = s.about_body;
+  }
+
+  // ---------- Search ----------
+  const searchBtn = document.getElementById('search-btn');
+  const searchPanel = document.getElementById('search-panel');
+  const searchInput = document.getElementById('search-input');
+  const searchResults = document.getElementById('search-results');
+
+  searchBtn.addEventListener('click', () => {
+    searchPanel.classList.toggle('open');
+    if(searchPanel.classList.contains('open')) setTimeout(() => searchInput.focus(), 100);
+  });
+
+  function renderSearch(query){
+    const q = query.trim().toLowerCase();
+    if(!q){ searchResults.innerHTML = ''; return; }
+    const matches = state.products.filter(p =>
+      p.title.toLowerCase().includes(q) || (p.franchise||'').toLowerCase().includes(q) || (p.category||'').toLowerCase().includes(q)
+    ).slice(0, 6);
+    if(!matches.length){ searchResults.innerHTML = '<p class="search-empty">No products found for "' + query + '"</p>'; return; }
+    searchResults.innerHTML = matches.map(p => {
+      const thumb = p.image ? '<img src="' + p.image + '" alt="">' : '';
+      return '<div class="search-result" data-cat="' + p.category + '">' +
+        '<div class="thumb">' + thumb + '</div>' +
+        '<div class="info"><div class="t">' + p.title + '</div><div class="f">' + (p.franchise||p.category) + '</div></div>' +
+        '<div class="p">PKR ' + p.price + '</div>' +
+      '</div>';
+    }).join('');
+    searchResults.querySelectorAll('.search-result').forEach(r => {
+      r.addEventListener('click', () => {
+        state.activeCategory = r.dataset.cat;
+        renderFilterBar(); renderAllProducts();
+        searchPanel.classList.remove('open');
+        document.getElementById('products').scrollIntoView({behavior:'smooth'});
+      });
+    });
+  }
+  searchInput.addEventListener('input', () => renderSearch(searchInput.value));
+
+  // ---------- Cart ----------
+  const CART_KEY = 'mirai-wear-cart';
+  function loadCart(){
+    try{ state.cart = JSON.parse(localStorage.getItem(CART_KEY)) || []; }catch(e){ state.cart = []; }
+  }
+  function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(state.cart)); }
+
+  function addToCart(product){
+    const existing = state.cart.find(i => i.id === product.id);
+    if(existing) existing.qty += 1;
+    else state.cart.push({ id: product.id, title: product.title, price: product.price, image: product.image, qty: 1 });
+    saveCart(); renderCart(); openCart();
+  }
+  function changeQty(id, delta){
+    const item = state.cart.find(i => i.id === id);
+    if(!item) return;
+    item.qty += delta;
+    if(item.qty <= 0) state.cart = state.cart.filter(i => i.id !== id);
+    saveCart(); renderCart();
+  }
+  function removeFromCart(id){
+    state.cart = state.cart.filter(i => i.id !== id);
+    saveCart(); renderCart();
+  }
+  function cartTotal(){ return state.cart.reduce((sum,i) => sum + i.price*i.qty, 0); }
+
+  function renderCart(){
+    const el = document.getElementById('cart-items');
+    const countBadge = document.getElementById('cart-count');
+    const totalCount = state.cart.reduce((s,i)=>s+i.qty,0);
+    countBadge.textContent = totalCount;
+    countBadge.style.display = totalCount > 0 ? 'flex' : 'none';
+
+    if(!state.cart.length){
+      el.innerHTML = '<p class="cart-empty">Your cart is empty.</p>';
+    } else {
+      el.innerHTML = state.cart.map(i => {
+        const thumb = i.image ? '<img src="' + i.image + '" alt="">' : '';
+        return '<div class="cart-item">' +
+          '<div class="thumb">' + thumb + '</div>' +
+          '<div class="meta">' +
+            '<div class="t">' + i.title + '</div>' +
+            '<div class="p">PKR ' + i.price + '</div>' +
+            '<div class="qty-row">' +
+              '<button class="qty-btn" data-act="dec" data-id="' + i.id + '">-</button>' +
+              '<span>' + i.qty + '</span>' +
+              '<button class="qty-btn" data-act="inc" data-id="' + i.id + '">+</button>' +
+              '<button class="remove-btn" data-act="rm" data-id="' + i.id + '">Remove</button>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      el.querySelectorAll('[data-act="inc"]').forEach(b => b.addEventListener('click', () => changeQty(b.dataset.id, 1)));
+      el.querySelectorAll('[data-act="dec"]').forEach(b => b.addEventListener('click', () => changeQty(b.dataset.id, -1)));
+      el.querySelectorAll('[data-act="rm"]').forEach(b => b.addEventListener('click', () => removeFromCart(b.dataset.id)));
+    }
+    document.getElementById('cart-subtotal').textContent = 'PKR ' + cartTotal();
+    updateCheckoutLinks();
+  }
+
+  function orderSummaryText(){
+    if(!state.cart.length) return 'Hi! I want to place an order.';
+    let lines = ["Hi Mirai Wear! I'd like to order:"];
+    state.cart.forEach(i => lines.push('- ' + i.title + ' x' + i.qty + ' (PKR ' + (i.price*i.qty) + ')'));
+    lines.push('Total: PKR ' + cartTotal());
+    return lines.join('\n');
+  }
+
+  function updateCheckoutLinks(){
+    const wa = document.getElementById('cart-whatsapp');
+    const em = document.getElementById('cart-email');
+    const number = (state.settings.whatsapp_number || '').replace(/[^0-9]/g,'');
+    const text = encodeURIComponent(orderSummaryText());
+    wa.href = number ? ('https://wa.me/' + number + '?text=' + text) : '#';
+    const email = state.settings.contact_email || '';
+    em.href = email ? ('mailto:' + email + '?subject=' + encodeURIComponent('Mirai Wear Order') + '&body=' + text) : '#';
+  }
+
+  function openCart(){ document.getElementById('cart-drawer').classList.add('open'); document.getElementById('cart-backdrop').classList.add('open'); }
+  function closeCart(){ document.getElementById('cart-drawer').classList.remove('open'); document.getElementById('cart-backdrop').classList.remove('open'); }
+
+  document.getElementById('cart-btn').addEventListener('click', openCart);
+  document.getElementById('cart-close').addEventListener('click', closeCart);
+  document.getElementById('cart-backdrop').addEventListener('click', closeCart);
+
+  document.addEventListener('click', function(e){
+    const trigger = e.target.closest('.quick-add');
+    if(trigger){
+      const id = trigger.dataset.id;
+      const product = state.products.find(p => p.id === id);
+      if(product) addToCart(product);
+    }
+  });
+
+  // ---------- Init ----------
+  async function init(){
+    loadCart();
+    const results = await Promise.all([
+      loadJSON('content/products.json'),
+      loadJSON('content/categories.json'),
+      loadJSON('content/settings.json')
+    ]);
+    state.products = (results[0] && results[0].items) || [];
+    state.categories = (results[1] && results[1].items) || [];
+    state.settings = results[2] || {};
+
+    applySettings();
+    renderCategories();
+    renderBestSellers();
+    renderNewArrivals();
+    renderFilterBar();
+    renderAllProducts();
+    renderCart();
+    initReveal();
+  }
+  init();
+
+  // ---------- Design request form ----------
+  const drFile = document.getElementById('dr-file');
+  const drFilename = document.getElementById('dr-filename');
+  drFile.addEventListener('change', () => { if(drFile.files[0]) drFilename.textContent = 'Selected: ' + drFile.files[0].name; });
+
+  const drForm = document.getElementById('design-request-form');
+  const drStatus = document.getElementById('dr-status');
+  const drSubmit = document.getElementById('dr-submit');
+
+  drForm.addEventListener('submit', async function(e){
+    e.preventDefault();
+    const endpoint = drForm.dataset.endpoint || state.settings.forminit_endpoint;
+    if(!endpoint || endpoint.indexOf('REPLACE_WITH_YOUR_FORM_ID') !== -1){
+      drStatus.className = 'form-status err';
+      drStatus.textContent = 'Form is not connected yet — set your Forminit endpoint in Site Settings in /admin.';
+      return;
+    }
+    drSubmit.disabled = true; drSubmit.textContent = 'Sending...';
+    try{
+      const formData = new FormData(drForm);
+      const res = await fetch(endpoint, { method: 'POST', body: formData });
+      if(!res.ok) throw new Error('Submit failed');
+      drStatus.className = 'form-status ok';
+      drStatus.textContent = "Sent! We'll reach out shortly with a price and mockup.";
+      drForm.reset(); drFilename.textContent = '';
+    }catch(err){
+      drStatus.className = 'form-status err';
+      drStatus.textContent = 'Something went wrong sending your request — try the WhatsApp option below instead.';
+    }finally{
+      drSubmit.disabled = false; drSubmit.textContent = 'Send Design Request';
+    }
+  });
+
+  document.getElementById('dr-whatsapp-fallback').addEventListener('click', function(e){
+    e.preventDefault();
+    const number = (state.settings.whatsapp_number || '').replace(/[^0-9]/g,'');
+    const name = document.getElementById('dr-name').value || '';
+    const color = document.getElementById('dr-color').value;
+    const size = document.getElementById('dr-size').value;
+    const fit = document.getElementById('dr-fit').value;
+    const qty = document.getElementById('dr-qty').value;
+    const notes = document.getElementById('dr-notes').value;
+    const text = encodeURIComponent(
+      'Hi Mirai Wear! Custom design request:\nName: ' + name + '\nColor: ' + color + '\nSize: ' + size + '\nFit: ' + fit + '\nQty: ' + qty +
+      (notes ? ('\nNotes: ' + notes) : '') + '\n(I will attach my design image in this chat.)'
+    );
+    if(number) window.open('https://wa.me/' + number + '?text=' + text, '_blank');
+    else alert('WhatsApp number not set yet — add it in Site Settings.');
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "items": [
+    { "name": "Anime", "emoji": "⛩️", "image": "" },
+    { "name": "Gaming", "emoji": "🎮", "image": "" },
+    { "name": "Movies/Series", "emoji": "🎬", "image": "" },
+    { "name": "Music", "emoji": "🎧", "image": "" },
+    { "name": "Original Designs", "emoji": "未", "image": "" }
+  ]
+}
