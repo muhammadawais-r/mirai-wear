@@ -40,9 +40,21 @@
   .icon-btn{position:relative; width:36px; height:36px; display:flex; align-items:center; justify-content:center; border:1px solid var(--line); border-radius:2px; transition:border-color .2s, background .2s;}
   .icon-btn:hover{border-color:var(--red-2); background:rgba(230,57,70,0.08);}
   .cart-count{position:absolute; top:-7px; right:-7px; background:var(--red-2); color:var(--ink); font-size:10px; font-weight:700; width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
-  .burger{display:none; flex-direction:column; gap:5px; cursor:pointer;}
-  .burger span{width:22px; height:2px; background:var(--paper);}
-  @media (max-width:960px){nav.primary{display:none;} .burger{display:flex;}}
+  .burger{display:none; flex-direction:column; gap:5px; cursor:pointer; width:36px; height:36px; align-items:center; justify-content:center;}
+  .burger span{width:22px; height:2px; background:var(--paper); transition:transform .25s ease, opacity .25s ease;}
+  .burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+  .burger.open span:nth-child(2){opacity:0;}
+  .burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+  @media (max-width:960px){
+    nav.primary{
+      display:flex; flex-direction:column; gap:0; position:fixed; top:69px; left:0; right:0; bottom:0;
+      background:var(--ink); padding:10px 24px 40px; transform:translateX(100%); transition:transform .3s ease;
+      z-index:39; overflow-y:auto;
+    }
+    nav.primary.open{transform:translateX(0);}
+    nav.primary a{padding:16px 0; border-bottom:1px solid var(--line); font-size:16px;}
+    .burger{display:flex;}
+  }
 
   /* Search overlay */
   .search-panel{
@@ -102,7 +114,7 @@
   .hero{position:relative; min-height:88vh; display:flex; align-items:center; padding:60px 24px 40px;
     background:radial-gradient(ellipse 60% 50% at 78% 18%, rgba(200,21,31,0.28), transparent 60%), radial-gradient(ellipse 40% 40% at 10% 90%, rgba(200,21,31,0.10), transparent 60%), var(--ink); overflow:hidden;}
   .hero::before{content:''; position:absolute; inset:0; background-image: repeating-linear-gradient(90deg, rgba(243,237,228,0.035) 0px, rgba(243,237,228,0.035) 1px, transparent 1px, transparent 64px); pointer-events:none;}
-  .hero-inner{max-width:1360px; margin:0 auto; width:100%; display:grid; grid-template-columns:1fr 1fr; gap:40px; align-items:center; position:relative; z-index:2;}
+  .hero-inner{max-width:1360px; margin:0 auto; width:100%; display:grid; grid-template-columns:1.15fr 0.85fr; gap:20px; align-items:center; position:relative; z-index:2;}
   .eyebrow{display:inline-flex; align-items:center; gap:10px; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--red-2); margin-bottom:22px;}
   .eyebrow::before{content:''; width:26px; height:1px; background:var(--red-2);}
   .hero h1{font-size:clamp(52px, 8vw, 108px); line-height:0.92; letter-spacing:0.005em;}
@@ -114,8 +126,8 @@
   .btn-primary:hover{transform:translateY(-2px); box-shadow:0 10px 30px -8px rgba(230,57,70,0.6);}
   .btn-ghost{border:1px solid var(--line); color:var(--paper);}
   .btn-ghost:hover{border-color:var(--paper); transform:translateY(-2px);}
-  .hero-mark{position:relative; display:flex; align-items:center; justify-content:center; width:100%;}
-  .hero-mark img{width:min(500px, 100%); filter:drop-shadow(0 30px 60px rgba(200,21,31,0.25)); animation:float 6s ease-in-out infinite;}
+  .hero-mark{position:relative; display:flex; align-items:center; justify-content:flex-end; width:100%; padding-right:20px;}
+  .hero-mark img{width:min(560px, 100%); filter:drop-shadow(0 30px 60px rgba(200,21,31,0.25)); animation:float 6s ease-in-out infinite;}
   @keyframes float{0%,100%{transform:translateY(0px);} 50%{transform:translateY(-14px);}}
   .kanji-strip{position:absolute; right:0; top:6%; writing-mode:vertical-rl; font-size:12px; letter-spacing:0.3em; color:rgba(243,237,228,0.35); text-transform:uppercase;}
   .hero-strip{max-width:1360px; margin:64px auto 0; padding:20px 24px 0; border-top:1px solid var(--line);
@@ -125,7 +137,7 @@
   .hero-strip strong{color:var(--paper); font-weight:600; display:block; margin-bottom:2px;}
   @media (max-width:860px){
     .hero-inner{grid-template-columns:1fr; text-align:left;}
-    .hero-mark{order:-1; margin-bottom:10px;}
+    .hero-mark{order:-1; margin-bottom:10px; justify-content:center; padding-right:0;}
     .hero-mark img{width:220px;}
     .kanji-strip{display:none;}
     .hero-strip{grid-template-columns:repeat(2,1fr); gap:16px;}
@@ -133,6 +145,7 @@
   }
 
   section{padding:100px 24px;}
+  @media (max-width:640px){ section{padding:56px 18px;} }
   .section-inner{max-width:1360px; margin:0 auto;}
   .section-head{display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:48px; flex-wrap:wrap;}
   .section-tag{font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--red-2); margin-bottom:12px; display:block;}
@@ -151,7 +164,7 @@
 
   .grid-4{display:grid; grid-template-columns:repeat(4,1fr); gap:22px;}
   @media (max-width:1080px){.grid-4{grid-template-columns:repeat(2,1fr);}}
-  @media (max-width:560px){.grid-4{grid-template-columns:1fr;}}
+  @media (max-width:480px){.grid-4{gap:12px;}}
 
   .card{position:relative; background:var(--ink-2); border:1px solid var(--line); border-radius:3px; overflow:hidden; transition:transform .3s ease, border-color .3s ease;}
   .card:hover{transform:translateY(-6px); border-color:rgba(230,57,70,0.5);}
@@ -167,6 +180,9 @@
   .card-body{padding:18px 16px 20px;}
   .card-body .franchise{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--grey); margin-bottom:6px;}
   .card-body h3{font-size:16px; font-weight:600; margin-bottom:10px; line-height:1.35;}
+  .size-row{display:flex; gap:6px; margin-bottom:12px;}
+  .size-opt{flex:1; text-align:center; padding:6px 0; border:1px solid var(--line); font-size:11px; letter-spacing:0.04em; border-radius:2px; cursor:pointer; transition:all .15s;}
+  .size-opt.selected{border-color:var(--red-2); color:var(--red-2); background:rgba(230,57,70,0.08);}
   .card-foot{display:flex; align-items:center; justify-content:space-between;}
   .price{font-family:'JetBrains Mono', monospace; font-size:15px; font-weight:500;}
   .price .was{color:var(--grey); text-decoration:line-through; font-size:12px; margin-right:6px;}
@@ -278,10 +294,15 @@
   <div class="cart-items" id="cart-items"></div>
   <div class="cart-foot">
     <div class="cart-subtotal"><span>Subtotal</span><strong id="cart-subtotal">PKR 0</strong></div>
+    <div class="row" style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px;">
+      <input type="text" id="cart-name" placeholder="Your Name" style="background:var(--ink); border:1px solid var(--line); color:var(--paper); padding:11px 12px; font-family:inherit; font-size:13px; border-radius:2px;">
+      <input type="tel" id="cart-phone" placeholder="Phone / WhatsApp" style="background:var(--ink); border:1px solid var(--line); color:var(--paper); padding:11px 12px; font-family:inherit; font-size:13px; border-radius:2px;">
+    </div>
     <div class="cart-checkout-btns">
       <a href="#" class="btn btn-block btn-whatsapp" id="cart-whatsapp">Order via WhatsApp</a>
-      <a href="#" class="btn btn-block btn-ghost" id="cart-email">Email My Order</a>
+      <button class="btn btn-block btn-ghost" id="cart-email">Email My Order</button>
     </div>
+    <div class="form-status" id="cart-status"></div>
   </div>
 </aside>
 
@@ -373,19 +394,22 @@
 
     <form class="design-form reveal" id="design-request-form">
       <div class="row">
-        <div class="field"><label for="dr-name">Full Name</label><input type="text" id="dr-name" name="name" required></div>
-        <div class="field"><label for="dr-phone">Phone / WhatsApp</label><input type="tel" id="dr-phone" name="phone" placeholder="03XX-XXXXXXX" required></div>
+        <div class="field"><label for="dr-name">Full Name</label><input type="text" id="dr-name" name="fi-sender-fullName" required></div>
+        <div class="field"><label for="dr-phone">Phone / WhatsApp</label><input type="tel" id="dr-phone" name="fi-sender-phone" placeholder="03XX-XXXXXXX" required></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="dr-email">Email</label><input type="email" id="dr-email" name="fi-sender-email" placeholder="you@example.com" required></div>
       </div>
       <div class="row">
         <div class="field">
           <label for="dr-color">Shirt Color</label>
-          <select id="dr-color" name="color" required>
+          <select id="dr-color" name="fi-text-color" required>
             <option value="Black">Black</option><option value="White">White</option><option value="Grey">Grey</option><option value="Navy">Navy</option>
           </select>
         </div>
         <div class="field">
           <label for="dr-fit">Fit</label>
-          <select id="dr-fit" name="fit" required>
+          <select id="dr-fit" name="fi-text-fit" required>
             <option value="Regular Fit">Regular Fit</option><option value="Oversized Fit">Oversized Fit</option>
           </select>
         </div>
@@ -393,21 +417,21 @@
       <div class="row">
         <div class="field">
           <label for="dr-size">Size</label>
-          <select id="dr-size" name="size" required>
+          <select id="dr-size" name="fi-text-size" required>
             <option value="S">S</option><option value="M">M</option><option value="L" selected>L</option><option value="XL">XL</option>
           </select>
         </div>
-        <div class="field"><label for="dr-qty">Quantity</label><input type="number" id="dr-qty" name="quantity" min="1" value="1" required></div>
+        <div class="field"><label for="dr-qty">Quantity</label><input type="number" id="dr-qty" name="fi-text-quantity" min="1" value="1" required></div>
       </div>
       <div class="field" style="margin-bottom:18px;">
         <label for="dr-notes">Notes (placement, text, references)</label>
-        <textarea id="dr-notes" name="notes" placeholder="e.g. print on front centre, keep the red glow, add my name below it"></textarea>
+        <textarea id="dr-notes" name="fi-text-notes" placeholder="e.g. print on front centre, keep the red glow, add my name below it"></textarea>
       </div>
       <div class="field" style="margin-bottom:6px;">
         <label>Your Design File</label>
         <label class="file-drop" id="dr-drop">
           <span id="dr-drop-text">Click to upload PNG / JPG — high resolution, please (300 DPI recommended)</span>
-          <input type="file" id="dr-file" name="attachment" accept="image/png, image/jpeg" required>
+          <input type="file" id="dr-file" name="fi-file-design" accept="image/png, image/jpeg" required>
         </label>
         <div class="file-name" id="dr-filename"></div>
       </div>
@@ -532,6 +556,19 @@
     if(window.netlifyIdentity) netlifyIdentity.logout();
   });
 
+  // ---------- Mobile menu ----------
+  const burger = document.querySelector('.burger');
+  const primaryNav = document.querySelector('nav.primary');
+  if(burger && primaryNav){
+    burger.addEventListener('click', () => {
+      burger.classList.toggle('open');
+      primaryNav.classList.toggle('open');
+    });
+    primaryNav.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      burger.classList.remove('open'); primaryNav.classList.remove('open');
+    }));
+  }
+
   // ---------- Scroll reveal ----------
   function initReveal(){
     const revealEls = document.querySelectorAll('.reveal');
@@ -561,12 +598,17 @@
     const rating = p.rating || 5;
     const stars = '★★★★★'.slice(0, rating) + '☆☆☆☆☆'.slice(0, 5-rating);
     const priceWas = p.compare_price ? '<span class="was">PKR ' + p.compare_price + '</span>' : '';
+    const sizes = ['S','M','L','XL'];
+    const sizeRow = '<div class="size-row" data-sizes-for="' + p.id + '">' +
+      sizes.map((s,i) => '<span class="size-opt' + (i===2?' selected':'') + '" data-size="' + s + '">' + s + '</span>').join('') +
+    '</div>';
     return '' +
       '<div class="card reveal">' +
         '<div class="card-media">' + badge + media + '<div class="quick-add" data-id="' + p.id + '">+ Add to Cart</div></div>' +
         '<div class="card-body">' +
           '<span class="franchise">' + (p.franchise || p.category) + '</span>' +
           '<h3>' + p.title + '</h3>' +
+          sizeRow +
           '<div class="card-foot"><span class="price">' + priceWas + 'PKR ' + p.price + '</span><span class="stars">' + stars + '</span></div>' +
         '</div>' +
       '</div>';
@@ -663,21 +705,24 @@
   }
   function saveCart(){ localStorage.setItem(CART_KEY, JSON.stringify(state.cart)); }
 
-  function addToCart(product){
-    const existing = state.cart.find(i => i.id === product.id);
+  function lineKey(id, size){ return id + '::' + size; }
+  function addToCart(product, size){
+    size = size || 'M';
+    const key = lineKey(product.id, size);
+    const existing = state.cart.find(i => lineKey(i.id, i.size) === key);
     if(existing) existing.qty += 1;
-    else state.cart.push({ id: product.id, title: product.title, price: product.price, image: product.image, qty: 1 });
+    else state.cart.push({ id: product.id, title: product.title, price: product.price, image: product.image, size: size, qty: 1 });
     saveCart(); renderCart(); openCart();
   }
-  function changeQty(id, delta){
-    const item = state.cart.find(i => i.id === id);
+  function changeQty(key, delta){
+    const item = state.cart.find(i => lineKey(i.id, i.size) === key);
     if(!item) return;
     item.qty += delta;
-    if(item.qty <= 0) state.cart = state.cart.filter(i => i.id !== id);
+    if(item.qty <= 0) state.cart = state.cart.filter(i => lineKey(i.id, i.size) !== key);
     saveCart(); renderCart();
   }
-  function removeFromCart(id){
-    state.cart = state.cart.filter(i => i.id !== id);
+  function removeFromCart(key){
+    state.cart = state.cart.filter(i => lineKey(i.id, i.size) !== key);
     saveCart(); renderCart();
   }
   function cartTotal(){ return state.cart.reduce((sum,i) => sum + i.price*i.qty, 0); }
@@ -694,45 +739,95 @@
     } else {
       el.innerHTML = state.cart.map(i => {
         const thumb = i.image ? '<img src="' + i.image + '" alt="">' : '';
+        const key = lineKey(i.id, i.size);
         return '<div class="cart-item">' +
           '<div class="thumb">' + thumb + '</div>' +
           '<div class="meta">' +
-            '<div class="t">' + i.title + '</div>' +
+            '<div class="t">' + i.title + ' <span style="color:var(--grey); font-weight:400;">(' + (i.size||'M') + ')</span></div>' +
             '<div class="p">PKR ' + i.price + '</div>' +
             '<div class="qty-row">' +
-              '<button class="qty-btn" data-act="dec" data-id="' + i.id + '">-</button>' +
+              '<button class="qty-btn" data-act="dec" data-key="' + key + '">-</button>' +
               '<span>' + i.qty + '</span>' +
-              '<button class="qty-btn" data-act="inc" data-id="' + i.id + '">+</button>' +
-              '<button class="remove-btn" data-act="rm" data-id="' + i.id + '">Remove</button>' +
+              '<button class="qty-btn" data-act="inc" data-key="' + key + '">+</button>' +
+              '<button class="remove-btn" data-act="rm" data-key="' + key + '">Remove</button>' +
             '</div>' +
           '</div>' +
         '</div>';
       }).join('');
-      el.querySelectorAll('[data-act="inc"]').forEach(b => b.addEventListener('click', () => changeQty(b.dataset.id, 1)));
-      el.querySelectorAll('[data-act="dec"]').forEach(b => b.addEventListener('click', () => changeQty(b.dataset.id, -1)));
-      el.querySelectorAll('[data-act="rm"]').forEach(b => b.addEventListener('click', () => removeFromCart(b.dataset.id)));
+      el.querySelectorAll('[data-act="inc"]').forEach(b => b.addEventListener('click', () => changeQty(b.dataset.key, 1)));
+      el.querySelectorAll('[data-act="dec"]').forEach(b => b.addEventListener('click', () => changeQty(b.dataset.key, -1)));
+      el.querySelectorAll('[data-act="rm"]').forEach(b => b.addEventListener('click', () => removeFromCart(b.dataset.key)));
     }
     document.getElementById('cart-subtotal').textContent = 'PKR ' + cartTotal();
     updateCheckoutLinks();
   }
 
   function orderSummaryText(){
+    const name = (document.getElementById('cart-name') || {}).value || '';
+    const phone = (document.getElementById('cart-phone') || {}).value || '';
     if(!state.cart.length) return 'Hi! I want to place an order.';
     let lines = ["Hi Mirai Wear! I'd like to order:"];
-    state.cart.forEach(i => lines.push('- ' + i.title + ' x' + i.qty + ' (PKR ' + (i.price*i.qty) + ')'));
+    if(name) lines.push('Name: ' + name);
+    if(phone) lines.push('Phone: ' + phone);
+    state.cart.forEach(i => lines.push('- ' + i.title + ' [Size: ' + (i.size||'M') + '] x' + i.qty + ' (PKR ' + (i.price*i.qty) + ')'));
     lines.push('Total: PKR ' + cartTotal());
     return lines.join('\n');
   }
 
   function updateCheckoutLinks(){
     const wa = document.getElementById('cart-whatsapp');
-    const em = document.getElementById('cart-email');
     const number = (state.settings.whatsapp_number || '').replace(/[^0-9]/g,'');
-    const text = encodeURIComponent(orderSummaryText());
-    wa.href = number ? ('https://wa.me/' + number + '?text=' + text) : '#';
-    const email = state.settings.contact_email || '';
-    em.href = email ? ('mailto:' + email + '?subject=' + encodeURIComponent('Mirai Wear Order') + '&body=' + text) : '#';
+    wa.href = '#';
+    wa.onclick = function(e){
+      e.preventDefault();
+      const name = document.getElementById('cart-name').value.trim();
+      const phone = document.getElementById('cart-phone').value.trim();
+      if(!name || !phone){ alert('Please enter your name and phone number first.'); return; }
+      if(!state.cart.length){ alert('Your cart is empty.'); return; }
+      if(!number){ alert('WhatsApp number not set up yet.'); return; }
+      window.open('https://wa.me/' + number + '?text=' + encodeURIComponent(orderSummaryText()), '_blank');
+    };
   }
+
+  async function submitCartOrderByEmail(){
+    const statusEl = document.getElementById('cart-status');
+    const name = document.getElementById('cart-name').value.trim();
+    const phone = document.getElementById('cart-phone').value.trim();
+    if(!name || !phone){ alert('Please enter your name and phone number first.'); return; }
+    if(!state.cart.length){ alert('Your cart is empty.'); return; }
+
+    const endpoint = state.settings.forminit_endpoint;
+    const summary = orderSummaryText();
+    const btn = document.getElementById('cart-email');
+
+    if(endpoint && endpoint.indexOf('REPLACE_WITH_YOUR_FORM_ID') === -1){
+      btn.disabled = true; btn.textContent = 'Sending...';
+      try{
+        const fd = new FormData();
+        fd.append('fi-text-form_type', 'Cart Order');
+        fd.append('fi-sender-fullName', name);
+        fd.append('fi-sender-phone', phone);
+        fd.append('fi-text-order_summary', summary);
+        fd.append('fi-text-total', 'PKR ' + cartTotal());
+        const res = await fetch(endpoint, { method: 'POST', body: fd });
+        if(!res.ok) throw new Error('failed');
+        statusEl.className = 'form-status ok';
+        statusEl.textContent = "Order sent! We'll confirm shortly.";
+      }catch(err){
+        statusEl.className = 'form-status err';
+        statusEl.textContent = 'Could not send automatically — opening your email app as a backup.';
+        window.location.href = 'mailto:' + (state.settings.contact_email||'') + '?subject=' + encodeURIComponent('Mirai Wear Order') + '&body=' + encodeURIComponent(summary);
+      }finally{
+        btn.disabled = false; btn.textContent = 'Email My Order';
+      }
+    } else {
+      // No Forminit endpoint set yet — fall back to mailto (only works if a mail app is configured)
+      window.location.href = 'mailto:' + (state.settings.contact_email||'') + '?subject=' + encodeURIComponent('Mirai Wear Order') + '&body=' + encodeURIComponent(summary);
+      statusEl.className = 'form-status err';
+      statusEl.textContent = 'Tip: set your Forminit endpoint in Site Settings so orders send reliably without needing a mail app.';
+    }
+  }
+  document.getElementById('cart-email').addEventListener('click', submitCartOrderByEmail);
 
   function openCart(){ document.getElementById('cart-drawer').classList.add('open'); document.getElementById('cart-backdrop').classList.add('open'); }
   function closeCart(){ document.getElementById('cart-drawer').classList.remove('open'); document.getElementById('cart-backdrop').classList.remove('open'); }
@@ -742,11 +837,21 @@
   document.getElementById('cart-backdrop').addEventListener('click', closeCart);
 
   document.addEventListener('click', function(e){
+    const sizeOpt = e.target.closest('.size-opt');
+    if(sizeOpt){
+      const row = sizeOpt.closest('.size-row');
+      row.querySelectorAll('.size-opt').forEach(o => o.classList.remove('selected'));
+      sizeOpt.classList.add('selected');
+      return;
+    }
     const trigger = e.target.closest('.quick-add');
     if(trigger){
       const id = trigger.dataset.id;
       const product = state.products.find(p => p.id === id);
-      if(product) addToCart(product);
+      const card = trigger.closest('.card');
+      const selectedSizeEl = card ? card.querySelector('.size-opt.selected') : null;
+      const size = selectedSizeEl ? selectedSizeEl.dataset.size : 'M';
+      if(product) addToCart(product, size);
     }
   });
 
