@@ -176,7 +176,8 @@
   .quick-add{position:absolute; left:14px; right:14px; bottom:14px; padding:12px; text-align:center; background:rgba(10,9,8,0.85); backdrop-filter:blur(6px); border:1px solid var(--line); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; opacity:0; transform:translateY(8px); transition:opacity .25s ease, transform .25s ease, background .2s; font-weight:600; z-index:2; cursor:pointer;}
   .card:hover .quick-add{opacity:1; transform:translateY(0);}
   .quick-add:hover{background:rgba(230,57,70,0.85);}
-  .cart-add-btn{margin-top:4px; width:100%; padding:11px; text-align:center; border:1px solid var(--line); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; border-radius:2px; transition:background .2s, border-color .2s, color .2s; cursor:pointer;}
+  .add-row{display:flex; justify-content:flex-end; align-items:center; margin-bottom:10px;}
+  .cart-add-btn{display:inline-flex; align-items:center; justify-content:center; padding:8px 16px; border:1px solid var(--line); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; border-radius:2px; transition:background .2s, border-color .2s, color .2s; cursor:pointer;}
   .cart-add-btn:hover, .cart-add-btn:active{border-color:var(--red-2); color:var(--red-2); background:rgba(230,57,70,0.08);}
   @media (hover:none), (pointer:coarse){ .card-media .quick-add{display:none;} }
   .card-body{padding:18px 16px 20px;}
@@ -564,6 +565,15 @@
     if(window.netlifyIdentity) netlifyIdentity.logout();
   });
 
+  function toE164(raw){
+    let digits = (raw || '').replace(/[^0-9+]/g, '');
+    if(digits.startsWith('+')) return digits;
+    if(digits.startsWith('0')) return '+92' + digits.slice(1);
+    if(digits.startsWith('92')) return '+' + digits;
+    if(digits.length === 10) return '+92' + digits;
+    return '+92' + digits.replace(/^0+/, '');
+  }
+
   // ---------- Mobile menu ----------
   const burger = document.querySelector('.burger');
   const primaryNav = document.querySelector('nav.primary');
@@ -616,9 +626,9 @@
         '<div class="card-body">' +
           '<span class="franchise">' + (p.franchise || p.category) + '</span>' +
           '<h3>' + p.title + '</h3>' +
+          '<div class="add-row"><div class="cart-add-btn quick-add" data-id="' + p.id + '">+ Add to Cart</div></div>' +
           sizeRow +
           '<div class="card-foot"><span class="price">' + priceWas + 'PKR ' + p.price + '</span><span class="stars">' + stars + '</span></div>' +
-          '<div class="cart-add-btn quick-add" data-id="' + p.id + '">+ Add to Cart</div>' +
         '</div>' +
       '</div>';
   }
@@ -734,6 +744,19 @@
     state.cart = state.cart.filter(i => lineKey(i.id, i.size) !== key);
     saveCart(); renderCart();
   }
+  function changeSize(oldKey, newSize){
+    const item = state.cart.find(i => lineKey(i.id, i.size) === oldKey);
+    if(!item || item.size === newSize) return;
+    const newKey = lineKey(item.id, newSize);
+    const existing = state.cart.find(i => lineKey(i.id, i.size) === newKey);
+    if(existing){
+      existing.qty += item.qty;
+      state.cart = state.cart.filter(i => lineKey(i.id, i.size) !== oldKey);
+    } else {
+      item.size = newSize;
+    }
+    saveCart(); renderCart();
+  }
   function cartTotal(){ return state.cart.reduce((sum,i) => sum + i.price*i.qty, 0); }
 
   function renderCart(){
@@ -749,11 +772,16 @@
       el.innerHTML = state.cart.map(i => {
         const thumb = i.image ? '<img src="' + i.image + '" alt="">' : '';
         const key = lineKey(i.id, i.size);
+        const sizes = ['S','M','L','XL'];
+        const miniSizeRow = '<div class="size-row" style="margin:8px 0 0;">' +
+          sizes.map(s => '<span class="size-opt' + (s===(i.size||'M') ? ' selected' : '') + '" data-cart-size-for="' + key + '" data-size="' + s + '">' + s + '</span>').join('') +
+        '</div>';
         return '<div class="cart-item">' +
           '<div class="thumb">' + thumb + '</div>' +
           '<div class="meta">' +
-            '<div class="t">' + i.title + ' <span style="color:var(--grey); font-weight:400;">(' + (i.size||'M') + ')</span></div>' +
+            '<div class="t">' + i.title + '</div>' +
             '<div class="p">PKR ' + i.price + '</div>' +
+            miniSizeRow +
             '<div class="qty-row">' +
               '<button class="qty-btn" data-act="dec" data-key="' + key + '">-</button>' +
               '<span>' + i.qty + '</span>' +
@@ -766,6 +794,7 @@
       el.querySelectorAll('[data-act="inc"]').forEach(b => b.addEventListener('click', () => changeQty(b.dataset.key, 1)));
       el.querySelectorAll('[data-act="dec"]').forEach(b => b.addEventListener('click', () => changeQty(b.dataset.key, -1)));
       el.querySelectorAll('[data-act="rm"]').forEach(b => b.addEventListener('click', () => removeFromCart(b.dataset.key)));
+      el.querySelectorAll('[data-cart-size-for]').forEach(b => b.addEventListener('click', () => changeSize(b.dataset.cartSizeFor, b.dataset.size)));
     }
     document.getElementById('cart-subtotal').textContent = 'PKR ' + cartTotal();
     updateCheckoutLinks();
@@ -795,6 +824,7 @@
       if(!state.cart.length){ alert('Your cart is empty.'); return; }
       if(!number){ alert('WhatsApp number not set up yet.'); return; }
       window.open('https://wa.me/' + number + '?text=' + encodeURIComponent(orderSummaryText()), '_blank');
+      state.cart = []; saveCart(); renderCart();
     };
   }
 
@@ -818,13 +848,14 @@
         const fd = new FormData();
         fd.append('fi-text-form_type', 'Cart Order');
         fd.append('fi-sender-fullName', name);
-        fd.append('fi-sender-phone', phone);
+        fd.append('fi-sender-phone', toE164(phone));
         fd.append('fi-text-order_summary', summary);
         fd.append('fi-text-total', 'PKR ' + cartTotal());
         const { data, error } = await forminitClient.submit(formId, fd);
         if(error) throw new Error(error.message || 'Submit failed');
         statusEl.className = 'form-status ok';
         statusEl.textContent = "Order sent! We'll confirm shortly.";
+        state.cart = []; saveCart(); renderCart();
       }catch(err){
         statusEl.className = 'form-status err';
         statusEl.textContent = 'Could not send: ' + err.message + ' — opening your email app as a backup.';
@@ -924,6 +955,7 @@
     drStatus.textContent = 'Sending your design...';
     try{
       const formData = new FormData(drForm);
+      formData.set('fi-sender-phone', toE164(formData.get('fi-sender-phone')));
       const { data, error } = await forminitClient.submit(formId, formData);
       if(error) throw new Error(error.message || 'Submit failed');
       drStatus.className = 'form-status ok';
