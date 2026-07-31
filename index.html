@@ -169,17 +169,18 @@
   .card{position:relative; background:var(--ink-2); border:1px solid var(--line); border-radius:3px; overflow:hidden; transition:transform .3s ease, border-color .3s ease;}
   .card:hover{transform:translateY(-6px); border-color:rgba(230,57,70,0.5);}
   .card-media{aspect-ratio:4/5; position:relative; overflow:hidden; background:repeating-linear-gradient(135deg, rgba(243,237,228,0.03) 0 2px, transparent 2px 14px), linear-gradient(160deg, #1c1a17, #0d0c0b); display:flex; align-items:center; justify-content:center;}
-  .card-media img{width:100%; height:100%; object-fit:cover;}
+  .card-media img{width:100%; height:100%; object-fit:cover; cursor:zoom-in;}
+  .lightbox{position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:70; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity .25s ease; padding:40px 20px;}
+  .lightbox.open{opacity:1; pointer-events:auto;}
+  .lightbox img{max-width:min(700px,92vw); max-height:88vh; object-fit:contain; border-radius:4px;}
+  .lightbox-close{position:absolute; top:20px; right:24px; font-size:32px; color:var(--paper); cursor:pointer; line-height:1;}
   .card-media .placeholder-mark{font-family:'Anton', sans-serif; font-size:15px; letter-spacing:0.08em; color:rgba(243,237,228,0.22); text-transform:uppercase; text-align:center; line-height:1.5;}
   .badge{position:absolute; top:14px; left:14px; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:6px 10px; background:var(--red-2); color:var(--ink); font-weight:700; border-radius:1px; transform:rotate(-2deg); z-index:2;}
   .badge.alt{background:var(--paper); color:var(--ink);}
-  .quick-add{position:absolute; left:14px; right:14px; bottom:14px; padding:12px; text-align:center; background:rgba(10,9,8,0.85); backdrop-filter:blur(6px); border:1px solid var(--line); font-size:11px; letter-spacing:0.1em; text-transform:uppercase; opacity:0; transform:translateY(8px); transition:opacity .25s ease, transform .25s ease, background .2s; font-weight:600; z-index:2; cursor:pointer;}
-  .card:hover .quick-add{opacity:1; transform:translateY(0);}
-  .quick-add:hover{background:rgba(230,57,70,0.85);}
   .add-row{display:flex; justify-content:flex-end; align-items:center; margin-bottom:10px;}
   .cart-add-btn{display:inline-flex; align-items:center; justify-content:center; padding:8px 16px; border:1px solid var(--line); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; border-radius:2px; transition:background .2s, border-color .2s, color .2s; cursor:pointer;}
   .cart-add-btn:hover, .cart-add-btn:active{border-color:var(--red-2); color:var(--red-2); background:rgba(230,57,70,0.08);}
-  @media (hover:none), (pointer:coarse){ .card-media .quick-add{display:none;} }
+  @media (hover:none), (pointer:coarse){ .cart-add-btn{padding:9px 15px;} }
   .card-body{padding:18px 16px 20px;}
   .card-body .franchise{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--grey); margin-bottom:6px;}
   .card-body h3{font-size:16px; font-weight:600; margin-bottom:10px; line-height:1.35;}
@@ -289,6 +290,10 @@
 </header>
 
 <div class="cart-backdrop" id="cart-backdrop"></div>
+<div class="lightbox" id="lightbox">
+  <span class="lightbox-close" id="lightbox-close">&times;</span>
+  <img src="" alt="" id="lightbox-img">
+</div>
 <aside class="cart-drawer" id="cart-drawer">
   <div class="cart-head">
     <h3 class="display">Your Cart</h3>
@@ -626,7 +631,7 @@
         '<div class="card-body">' +
           '<span class="franchise">' + (p.franchise || p.category) + '</span>' +
           '<h3>' + p.title + '</h3>' +
-          '<div class="add-row"><div class="cart-add-btn quick-add" data-id="' + p.id + '">+ Add to Cart</div></div>' +
+          '<div class="add-row"><div class="cart-add-btn" data-id="' + p.id + '">+ Add to Cart</div></div>' +
           sizeRow +
           '<div class="card-foot"><span class="price">' + priceWas + 'PKR ' + p.price + '</span><span class="stars">' + stars + '</span></div>' +
         '</div>' +
@@ -877,8 +882,19 @@
   document.getElementById('cart-btn').addEventListener('click', openCart);
   document.getElementById('cart-close').addEventListener('click', closeCart);
   document.getElementById('cart-backdrop').addEventListener('click', closeCart);
+  document.getElementById('lightbox-close').addEventListener('click', () => document.getElementById('lightbox').classList.remove('open'));
+  document.getElementById('lightbox').addEventListener('click', function(e){
+    if(e.target.id === 'lightbox') this.classList.remove('open');
+  });
 
   document.addEventListener('click', function(e){
+    const img = e.target.closest('.card-media img');
+    if(img){
+      document.getElementById('lightbox-img').src = img.src;
+      document.getElementById('lightbox-img').alt = img.alt;
+      document.getElementById('lightbox').classList.add('open');
+      return;
+    }
     const sizeOpt = e.target.closest('.size-opt');
     if(sizeOpt){
       const row = sizeOpt.closest('.size-row');
@@ -886,7 +902,7 @@
       sizeOpt.classList.add('selected');
       return;
     }
-    const trigger = e.target.closest('.quick-add');
+    const trigger = e.target.closest('.cart-add-btn');
     if(trigger){
       const id = trigger.dataset.id;
       const product = state.products.find(p => p.id === id);
