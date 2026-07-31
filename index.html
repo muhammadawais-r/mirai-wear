@@ -11,14 +11,14 @@
     --ink:#0a0908; --ink-2:#141210; --paper:#f3ede4;
     --red:#c8151f; --red-2:#e63946; --grey:#8a8378; --line:rgba(243,237,228,0.14);
   }
-  *{box-sizing:border-box; margin:0; padding:0;}
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
   html{scroll-behavior:smooth;}
   body{background:var(--ink); color:var(--paper); font-family:'Space Grotesk', sans-serif; overflow-x:hidden; -webkit-font-smoothing:antialiased;}
   .display{font-family:'Anton', sans-serif; letter-spacing:0.01em; text-transform:uppercase;}
   .mono{font-family:'JetBrains Mono', monospace;}
-  a{color:inherit; text-decoration:none;}
+  a{color:inherit; text-decoration:none; -webkit-tap-highlight-color:transparent;}
   img{max-width:100%; display:block;}
-  button{font-family:inherit; cursor:pointer; background:none; border:none; color:inherit;}
+  button{font-family:inherit; cursor:pointer; background:none; border:none; color:inherit; -webkit-tap-highlight-color:transparent;}
   ::selection{background:var(--red); color:var(--paper);}
   a:focus-visible, button:focus-visible{outline:2px solid var(--red-2); outline-offset:3px;}
 
@@ -178,6 +178,7 @@
   .quick-add:hover{background:rgba(230,57,70,0.85);}
   .cart-add-btn{margin-top:4px; width:100%; padding:11px; text-align:center; border:1px solid var(--line); font-size:11px; letter-spacing:0.08em; text-transform:uppercase; font-weight:600; border-radius:2px; transition:background .2s, border-color .2s, color .2s; cursor:pointer;}
   .cart-add-btn:hover, .cart-add-btn:active{border-color:var(--red-2); color:var(--red-2); background:rgba(230,57,70,0.08);}
+  @media (hover:none), (pointer:coarse){ .card-media .quick-add{display:none;} }
   .card-body{padding:18px 16px 20px;}
   .card-body .franchise{font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--grey); margin-bottom:6px;}
   .card-body h3{font-size:16px; font-weight:600; margin-bottom:10px; line-height:1.35;}
@@ -250,7 +251,6 @@
 </style>
 </head>
 <body>
-<iframe name="hidden-submit-frame" style="display:none;" title="submission target"></iframe>
 <div class="grain"></div>
 
 <header>
@@ -394,7 +394,7 @@
       <p style="max-width:520px; color:rgba(243,237,228,0.65); margin-top:14px; font-size:15px;">Upload your artwork, tell us the shirt color, size and fit — we'll get back to you with a price and mockup before printing anything.</p>
     </div>
 
-    <form class="design-form reveal" id="design-request-form" method="POST" enctype="multipart/form-data" target="hidden-submit-frame">
+    <form class="design-form reveal" id="design-request-form">
       <div class="row">
         <div class="field"><label for="dr-name">Full Name</label><input type="text" id="dr-name" name="fi-sender-fullName" required></div>
         <div class="field"><label for="dr-phone">Phone / WhatsApp</label><input type="tel" id="dr-phone" name="fi-sender-phone" placeholder="03XX-XXXXXXX" required></div>
@@ -523,6 +523,7 @@
   </div>
 </footer>
 
+<script src="https://forminit.com/sdk/v1/forminit.js"></script>
 <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
   // ---------- Netlify Identity (real backend auth for the hidden admin trigger) ----------
@@ -611,7 +612,7 @@
     '</div>';
     return '' +
       '<div class="card reveal">' +
-        '<div class="card-media">' + badge + media + '<div class="quick-add" data-id="' + p.id + '">+ Add to Cart</div></div>' +
+        '<div class="card-media">' + badge + media + '</div>' +
         '<div class="card-body">' +
           '<span class="franchise">' + (p.franchise || p.category) + '</span>' +
           '<h3>' + p.title + '</h3>' +
@@ -797,7 +798,7 @@
     };
   }
 
-  function submitCartOrderByEmail(){
+  async function submitCartOrderByEmail(){
     const statusEl = document.getElementById('cart-status');
     const name = document.getElementById('cart-name').value.trim();
     const phone = document.getElementById('cart-phone').value.trim();
@@ -805,38 +806,33 @@
     if(!state.cart.length){ alert('Your cart is empty.'); return; }
 
     const endpoint = state.settings.forminit_endpoint;
+    const formId = extractFormId(endpoint);
     const summary = orderSummaryText();
     const btn = document.getElementById('cart-email');
 
-    if(endpoint && endpoint.indexOf('REPLACE_WITH_YOUR_FORM_ID') === -1){
-      // Build a hidden form and submit natively via the shared hidden iframe (avoids CORS/fetch issues)
-      const f = document.createElement('form');
-      f.method = 'POST'; f.action = endpoint; f.target = 'hidden-submit-frame'; f.style.display = 'none';
-      const fields = {
-        'fi-text-form_type': 'Cart Order',
-        'fi-sender-fullName': name,
-        'fi-sender-phone': phone,
-        'fi-text-order_summary': summary,
-        'fi-text-total': 'PKR ' + cartTotal()
-      };
-      Object.keys(fields).forEach(function(key){
-        const input = document.createElement('input');
-        input.type = 'hidden'; input.name = key; input.value = fields[key];
-        f.appendChild(input);
-      });
-      document.body.appendChild(f);
-      f.submit();
-      document.body.removeChild(f);
-
+    if(endpoint && endpoint.indexOf('REPLACE_WITH_YOUR_FORM_ID') === -1 && formId && forminitClient){
       btn.disabled = true; btn.textContent = 'Sending...';
       statusEl.className = 'form-status ok';
-      statusEl.textContent = 'Sending your order now...';
-      setTimeout(function(){
+      statusEl.textContent = 'Sending your order...';
+      try{
+        const fd = new FormData();
+        fd.append('fi-text-form_type', 'Cart Order');
+        fd.append('fi-sender-fullName', name);
+        fd.append('fi-sender-phone', phone);
+        fd.append('fi-text-order_summary', summary);
+        fd.append('fi-text-total', 'PKR ' + cartTotal());
+        const { data, error } = await forminitClient.submit(formId, fd);
+        if(error) throw new Error(error.message || 'Submit failed');
+        statusEl.className = 'form-status ok';
         statusEl.textContent = "Order sent! We'll confirm shortly.";
+      }catch(err){
+        statusEl.className = 'form-status err';
+        statusEl.textContent = 'Could not send: ' + err.message + ' — opening your email app as a backup.';
+        window.location.href = 'mailto:' + (state.settings.contact_email||'') + '?subject=' + encodeURIComponent('Mirai Wear Order') + '&body=' + encodeURIComponent(summary);
+      }finally{
         btn.disabled = false; btn.textContent = 'Email My Order';
-      }, 2000);
+      }
     } else {
-      // No Forminit endpoint set yet — fall back to mailto (only works if a mail app is configured)
       window.location.href = 'mailto:' + (state.settings.contact_email||'') + '?subject=' + encodeURIComponent('Mirai Wear Order') + '&body=' + encodeURIComponent(summary);
       statusEl.className = 'form-status err';
       statusEl.textContent = 'Tip: set your Forminit endpoint in Site Settings so orders send reliably without needing a mail app.';
@@ -902,24 +898,43 @@
   const drStatus = document.getElementById('dr-status');
   const drSubmit = document.getElementById('dr-submit');
 
-  drForm.addEventListener('submit', function(e){
+  function extractFormId(endpoint){
+    if(!endpoint) return null;
+    const parts = endpoint.split('/').filter(Boolean);
+    return parts[parts.length - 1];
+  }
+  const forminitClient = (typeof Forminit !== 'undefined') ? new Forminit() : null;
+
+  drForm.addEventListener('submit', async function(e){
+    e.preventDefault();
     const endpoint = drForm.dataset.endpoint || state.settings.forminit_endpoint;
-    if(!endpoint || endpoint.indexOf('REPLACE_WITH_YOUR_FORM_ID') !== -1){
-      e.preventDefault();
+    const formId = extractFormId(endpoint);
+    if(!endpoint || endpoint.indexOf('REPLACE_WITH_YOUR_FORM_ID') !== -1 || !formId){
       drStatus.className = 'form-status err';
       drStatus.textContent = 'Form is not connected yet — set your Forminit endpoint in Site Settings in /admin.';
       return;
     }
-    // Let the browser submit natively to the hidden iframe (avoids cross-origin fetch/CORS issues)
-    drForm.action = endpoint;
+    if(!forminitClient){
+      drStatus.className = 'form-status err';
+      drStatus.textContent = 'Form service failed to load — check your internet connection and try again.';
+      return;
+    }
     drSubmit.disabled = true; drSubmit.textContent = 'Sending...';
     drStatus.className = 'form-status ok';
-    drStatus.textContent = "Sending your design now...";
-    setTimeout(function(){
+    drStatus.textContent = 'Sending your design...';
+    try{
+      const formData = new FormData(drForm);
+      const { data, error } = await forminitClient.submit(formId, formData);
+      if(error) throw new Error(error.message || 'Submit failed');
+      drStatus.className = 'form-status ok';
       drStatus.textContent = "Sent! We'll reach out shortly with a price and mockup.";
       drForm.reset(); drFilename.textContent = '';
+    }catch(err){
+      drStatus.className = 'form-status err';
+      drStatus.textContent = 'Could not send: ' + err.message + ' — try the WhatsApp option below instead.';
+    }finally{
       drSubmit.disabled = false; drSubmit.textContent = 'Send Design Request';
-    }, 2000);
+    }
   });
 
   document.getElementById('dr-whatsapp-fallback').addEventListener('click', function(e){
